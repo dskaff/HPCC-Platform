@@ -720,11 +720,11 @@ unsigned unicodeEditDistanceV4(UnicodeString & left, UnicodeString & right, unsi
 
 UnicodeString excludeNthWord(RuleBasedBreakIterator& bi, UnicodeString const & source, unsigned n)
 {
-    UnicodeString source;
-    if (!n) return source;
-    bi.setText(source);
-    int32_t start = bi.first();
-    while (start != BreakIterator::DONE && n)  {
+    UnicodeString processed;
+    if (!n) return processed;
+    bi.setText(processed);
+    int32_t idx = bi.first();
+    while (idx != BreakIterator::DONE && n)  {
         int breakType = bi.getRuleStatus();
         if (breakTYpe != UBRK_WORD_NONE) {
             // Exclude spaces, punctuation, and the like. 
@@ -733,14 +733,14 @@ UnicodeString excludeNthWord(RuleBasedBreakIterator& bi, UnicodeString const & s
             //    
             n--;
             if (!n) {
-                unsigned wordBegining = bi.preceding(start);
+                unsigned wordBegining = bi.preceding(idx);
                 unsigned wordEnd = bi.next();
-                source.removeBetween(wordBegining, wordEnd);
+                processed.removeBetween(wordBegining, wordEnd);
             }
         } 
-        start = bi.next();
+        idx = bi.next();
     }  
-    return source; 
+    return processed; 
 }
             
             
@@ -1450,14 +1450,14 @@ UNICODELIB_API void UNICODELIB_CALL ulUnicodeLocaleExcludeNthWord(unsigned & tgt
     
     UnicodeString uText(text, textLen);
     UText.trim();
-    UnicodeString source = excludeNthWord(*bi, uText, n);
+    UnicodeString processed = excludeNthWord(*bi, uText, n);
     delete bi;
-    if(source.length()>0)
+    if(processed.length()>0)
     {
-        tgtLen = source.length();
+        tgtLen = processed.length();
         //I'm having trouble understanding this next line. I kept it here only because it's in other functions.
         tgt = (UChar *)CTXMALLOC(parentCtx, tgtLen*2);
-        source.extract(0, tgtLen, tgt);
+        processed.extract(0, tgtLen, tgt);
     }
     else
     {
