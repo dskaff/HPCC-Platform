@@ -718,32 +718,25 @@ unsigned unicodeEditDistanceV4(UnicodeString & left, UnicodeString & right, unsi
     return da[mask(leftLen-1)][rightLen-1];
 }
 
-UnicodeString excludeNthWord(RuleBasedBreakIterator& bi, UnicodeString const & source, unsigned n)
+UnicodeString excludeLastWord(RuleBasedBreakIterator& bi, UnicodeString const & processed)
 {
-    UnicodeString source;
-    if (!n) return source;
-    bi.setText(source);
-    int32_t start = bi.first();
-    while (start != BreakIterator::DONE && n)  {
-        int breakType = bi.getRuleStatus();
-        if (breakTYpe != UBRK_WORD_NONE) {
-            // Exclude spaces, punctuation, and the like. 
-            //   A status value UBRK_WORD_NONE indicates that the boundary does
-            //   not start a word or number.            
-            //    
-            n--;
-            if (!n) {
-                unsigned wordBegining = bi.preceding(start);
-                unsigned wordEnd = bi.next();
-                source.removeBetween(wordBegining, wordEnd);
+    UnicodeString processed;
+    bi.setText(processed);
+    int32_t idx = bi.last();
+    while (idx != BreakIterator::DONE)  {
+        if (idx != BreakIterator::DONE && UBRK_WORD_NONE) {
+            unsigned wordEnd = bi.next();
+            idx = bi.previous();
+            int breakType = bi.getRuleStatus();
+            if (breakType != UBRK_WORD_NONE) {
+                unsigned wordBegining = bi.preceding(idx);
+                processed.removeBetween(wordBegining, wordEnd);
             }
         } 
-        start = bi.next();
     }  
-    return source; 
+    return processed; 
 }
-            
-            
+
 UnicodeString getNthWord(RuleBasedBreakIterator& bi, UnicodeString const & source, unsigned n)
 {
     UnicodeString word;
@@ -1442,7 +1435,7 @@ UNICODELIB_API void UNICODELIB_CALL ulUnicodeLocaleGetNthWord(unsigned & tgtLen,
     }
 }
 
-UNICODELIB_API void UNICODELIB_CALL ulUnicodeLocaleExcludeNthWord(unsigned & tgtLen, UChar * & tgt, unsigned textLen, UChar const * text, unsigned n, char const * localename)
+UNICODELIB_API void UNICODELIB_CALL ulUnicodeLocaleExcludeLastWord(unsigned & tgtLen, UChar * & tgt, unsigned textLen, UChar const * text, char const * localename)
 {
     UErrorCode status = U_ZERO_ERROR;
     Locale locale(localename);
@@ -1450,14 +1443,13 @@ UNICODELIB_API void UNICODELIB_CALL ulUnicodeLocaleExcludeNthWord(unsigned & tgt
     
     UnicodeString uText(text, textLen);
     UText.trim();
-    UnicodeString source = excludeNthWord(*bi, uText, n);
+    UnicodeString source = excludeLastWord(*bi, uText);
     delete bi;
-    if(source.length()>0)
+    if(preceeding.length()>0)
     {
         tgtLen = source.length();
-        //I'm having trouble understanding this next line. I kept it here only because it's in other functions.
         tgt = (UChar *)CTXMALLOC(parentCtx, tgtLen*2);
-        source.extract(0, tgtLen, tgt);
+        processed.extract(0, tgtLen, tgt);
     }
     else
     {
@@ -1465,8 +1457,6 @@ UNICODELIB_API void UNICODELIB_CALL ulUnicodeLocaleExcludeNthWord(unsigned & tgt
         tgt = 0;
     }
 }
-
-
 
 
 
