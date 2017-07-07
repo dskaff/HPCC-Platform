@@ -34,6 +34,11 @@
  +    //Test other space characters (< 0x20)
  +    EXPORT Test09 := ASSERT(Uni.ExcludeLastWord(U'  a b\n')+U'!' = U'  a !');
  +    EXPORT Test10 := ASSERT(Uni.ExcludeLastWord(U'  a b\nc \t  def    ')+U'!' = U'  a b\nc !');
+ +    //Test latin diacritical marks
+ +    EXPORT Test11 := ASSERT(Uni.ExcludeNthWord(U'À à')+U'!' = U'À !');
+ +    EXPORT Test12 := ASSERT(Uni.ExcludeNthWord(U'ä̰́ Ä̰́')+U'!' = U'ä̰́ !');
+ +    //Test Chinese. "I am a computer" --> "I am"
+ +    EXPORT Test13 := ASSERT(Uni.ExcludeNthWord(U'我是電腦')+U'!' = U'我是  !');
  +  END;
  +
  +END;
